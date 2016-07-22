@@ -29,5 +29,9 @@
   "Widget": {
     "dataSource": "db",
     "public": false
+  },
+  "Book": {
+    "dataSource": "db",
+    "public": false
   }
 }

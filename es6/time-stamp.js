@@ -1,9 +1,14 @@
 import _debug from './debug';
+
 const debug = _debug();
 const warn = (options, message) => {
   if (!options.silenceWarnings) {
     console.warn(message);
   }
+};
+const types = {
+  unix: 'number',
+  date: Date,
 };
 
 export default (Model, bootOptions = {}) => {
@@ -13,9 +18,11 @@ export default (Model, bootOptions = {}) => {
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     required: true,
+    type: 'date',
     validateUpsert: false, // default to turning validation off
     silenceWarnings: false,
   }, bootOptions);
+  options.type = types[options.type];
 
   debug('options', options);
 
@@ -30,13 +37,14 @@ export default (Model, bootOptions = {}) => {
   }
 
   Model.defineProperty(options.createdAt, {
-    type: Date,
+    type: options.type,
     required: options.required,
-    defaultFn: 'now',
+    defaultFn: options.type === types.unix ? undefined : 'now',
+    default: options.type === types.unix ? Date.now : undefined,
   });
 
   Model.defineProperty(options.updatedAt, {
-    type: Date,
+    type: options.type,
     required: options.required,
   });
 
@@ -45,11 +53,11 @@ export default (Model, bootOptions = {}) => {
     if (ctx.options && ctx.options.skipUpdatedAt) { return next(); }
     if (ctx.instance) {
       debug('%s.%s before save: %s', ctx.Model.modelName, options.updatedAt, ctx.instance.id);
-      ctx.instance[options.updatedAt] = new Date();
+      ctx.instance[options.updatedAt] = options.type === types.unix ? Date.now() : new Date();
     } else {
       debug('%s.%s before update matching %j',
             ctx.Model.pluralModelName, options.updatedAt, ctx.where);
-      ctx.data[options.updatedAt] = new Date();
+      ctx.data[options.updatedAt] = options.type === types.unix ? Date.now() : new Date();
     }
     return next();
   });
