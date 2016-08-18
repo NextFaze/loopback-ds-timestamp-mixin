@@ -1,0 +1,21 @@
+{
+  "name": "Chapter",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "name": {
+      "type": "string",
+      "required": false
+    },
+    "type": {
+      "type": "string",
+      "required": false
+    }
+  },
+  "mixins": {
+    "TimeStamp" : true
+  }
+}

@@ -41,11 +41,15 @@ export default (Model, bootOptions = {}) => {
     required: options.required,
     defaultFn: options.type === types.unix ? undefined : 'now',
     default: options.type === types.unix ? Date.now : undefined,
+    // unix timestamp won't fit on an integer
+    postgresql: options.type === types.unix ? { dataType: 'bigint' } : undefined,
   });
 
   Model.defineProperty(options.updatedAt, {
     type: options.type,
     required: options.required,
+    // unix timestamp won't fit on an integer
+    postgresql: options.type === types.unix ? { dataType: 'bigint' } : undefined,
   });
 
   Model.observe('before save', (ctx, next) => {
