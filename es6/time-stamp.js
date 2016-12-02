@@ -36,35 +36,39 @@ export default (Model, bootOptions = {}) => {
           validation is turned on and time stamps are required`);
   }
 
-  Model.defineProperty(options.createdAt, {
-    type: options.type,
-    required: options.required,
-    defaultFn: options.type === types.unix ? undefined : 'now',
-    default: options.type === types.unix ? Date.now : undefined,
-    // unix timestamp won't fit on an integer
-    postgresql: options.type === types.unix ? { dataType: 'bigint' } : undefined,
-  });
+  if (options.createdAt !== false) {
+    Model.defineProperty(options.createdAt, {
+      type: options.type,
+      required: options.required,
+      defaultFn: options.type === types.unix ? undefined : 'now',
+      default: options.type === types.unix ? Date.now : undefined,
+      // unix timestamp won't fit on an integer
+      postgresql: options.type === types.unix ? { dataType: 'bigint' } : undefined,
+    });
+  }
 
-  Model.defineProperty(options.updatedAt, {
-    type: options.type,
-    required: options.required,
-    // unix timestamp won't fit on an integer
-    postgresql: options.type === types.unix ? { dataType: 'bigint' } : undefined,
-  });
+  if (options.updatedAt !== false) {
+    Model.defineProperty(options.updatedAt, {
+      type: options.type,
+      required: options.required,
+      // unix timestamp won't fit on an integer
+      postgresql: options.type === types.unix ? { dataType: 'bigint' } : undefined,
+    });
 
-  Model.observe('before save', (ctx, next) => {
-    debug('ctx.options', ctx.options);
-    if (ctx.options && ctx.options.skipUpdatedAt) { return next(); }
-    if (ctx.instance) {
-      debug('%s.%s before save: %s', ctx.Model.modelName, options.updatedAt, ctx.instance.id);
-      ctx.instance[options.updatedAt] = options.type === types.unix ? Date.now() : new Date();
-    } else {
-      debug('%s.%s before update matching %j',
-            ctx.Model.pluralModelName, options.updatedAt, ctx.where);
-      ctx.data[options.updatedAt] = options.type === types.unix ? Date.now() : new Date();
-    }
-    return next();
-  });
+    Model.observe('before save', (ctx, next) => {
+      debug('ctx.options', ctx.options);
+      if (ctx.options && ctx.options.skipUpdatedAt) { return next(); }
+      if (ctx.instance) {
+        debug('%s.%s before save: %s', ctx.Model.modelName, options.updatedAt, ctx.instance.id);
+        ctx.instance[options.updatedAt] = options.type === types.unix ? Date.now() : new Date();
+      } else {
+        debug('%s.%s before update matching %j',
+              ctx.Model.pluralModelName, options.updatedAt, ctx.where);
+        ctx.data[options.updatedAt] = options.type === types.unix ? Date.now() : new Date();
+      }
+      return next();
+    });
+  }
 };
 
 module.exports = exports.default;
