@@ -9,6 +9,20 @@ test('loopback datasource timestamps', function(tap) {
 
   var Book = app.models.Book;
 
+  tap.test('postgres', function(t) {
+    t.test('should add bigint data type', function(tt) {
+      tt.equal(Book.definition.properties.createdAt.postgresql.dataType, 'bigint');
+      tt.end();
+    });
+
+    t.test('should use provided postgres options', function(tt) {
+      tt.equal(Book.definition.properties.createdAt.postgresql.dbDefault, 'EXTRACT(EPOCH FROM now())');
+      tt.end();
+    });
+
+    t.end();
+  });
+
   tap.test('createdAt', function(t) {
 
     t.test('should exist on create', function(tt) {
@@ -244,8 +258,6 @@ test('loopback datasource timestamps', function(tap) {
 
           Book.updateOrCreate(book, {skipUpdatedAt: true}, function(err, book2) {
             tt.error(err);
-
-            console.log(book1.updatedAt, book2.updatedAt);
 
             tt.type(book2.updatedAt, 'number');
             tt.equal(book1.updatedAt, book2.updatedAt);

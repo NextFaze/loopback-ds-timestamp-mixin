@@ -11,6 +11,22 @@ const types = {
   date: Date,
 };
 
+function defineModelProperty(Model, name, options) {
+  const inputConfig = Model.definition.properties[name] || {};
+  const inputPostgresConfig = inputConfig.postgresql || {};
+  const postgresConfig = Object.assign({}, {
+    // unix timestamp won't fit on an integer
+    dataType: options.type === types.unix ? 'bigint' : undefined,
+  }, inputPostgresConfig);
+  const config = Object.assign({
+    type: options.type,
+    required: options.required,
+    defaultFn: options.type === types.unix ? undefined : 'now',
+    default: options.type === types.unix ? Date.now : undefined,
+  }, inputConfig, { postgresql: postgresConfig });
+  Model.defineProperty(name, config);
+}
+
 export default (Model, bootOptions = {}) => {
   debug('TimeStamp mixin for Model %s', Model.modelName);
 
@@ -37,23 +53,11 @@ export default (Model, bootOptions = {}) => {
   }
 
   if (options.createdAt !== false) {
-    Model.defineProperty(options.createdAt, {
-      type: options.type,
-      required: options.required,
-      defaultFn: options.type === types.unix ? undefined : 'now',
-      default: options.type === types.unix ? Date.now : undefined,
-      // unix timestamp won't fit on an integer
-      postgresql: options.type === types.unix ? { dataType: 'bigint' } : undefined,
-    });
+    defineModelProperty(Model, options.createdAt, options);
   }
 
   if (options.updatedAt !== false) {
-    Model.defineProperty(options.updatedAt, {
-      type: options.type,
-      required: options.required,
-      // unix timestamp won't fit on an integer
-      postgresql: options.type === types.unix ? { dataType: 'bigint' } : undefined,
-    });
+    defineModelProperty(Model, options.updatedAt, options);
 
     Model.observe('before save', (ctx, next) => {
       debug('ctx.options', ctx.options);
