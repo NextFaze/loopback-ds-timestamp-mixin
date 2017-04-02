@@ -35,12 +35,12 @@ function defineModelProperty(Model, name, options) {
     required: options.required,
     defaultFn: options.type === types.unix ? undefined : 'now',
     default: options.type === types.unix ? Date.now : undefined
-  }, inputConfig, { postgresql: postgresConfig });
+  }, inputConfig, { postgresql: postgresConfig, type: options.type });
   Model.defineProperty(name, config);
 }
 
 exports.default = function (Model) {
-  var bootOptions = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  var bootOptions = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
   debug('TimeStamp mixin for Model %s', Model.modelName);
 

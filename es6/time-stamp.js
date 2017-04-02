@@ -23,7 +23,7 @@ function defineModelProperty(Model, name, options) {
     required: options.required,
     defaultFn: options.type === types.unix ? undefined : 'now',
     default: options.type === types.unix ? Date.now : undefined,
-  }, inputConfig, { postgresql: postgresConfig });
+  }, inputConfig, { postgresql: postgresConfig, type: options.type });
   Model.defineProperty(name, config);
 }
 
